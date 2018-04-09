@@ -71,7 +71,7 @@ workflows:
   create-release:
     steps:
     - script:
-        title:
+        title: Create release
         inputs:
         - content: |
             #!/bin/bash
