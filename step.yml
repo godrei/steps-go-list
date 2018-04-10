@@ -4,9 +4,9 @@ description: |-
     Runs `go list ./...` command in the current working directory (should be your go project's dir).
     The package list is filtered by the given exclude patterns.
 
-website: https://github.com/godrei/bitrise-step-go-list
-source_code_url: https://github.com/godrei/bitrise-step-go-list
-support_url: https://github.com/godrei/bitrise-step-go-list/issues
+website: https://github.com/bitrise-steplib/steps-go-list
+source_code_url: https://github.com/bitrise-steplib/steps-go-list
+support_url: https://github.com/bitrise-steplib/steps-go-list/issues
 
 type_tags:
   - utility
@@ -18,15 +18,26 @@ run_if: ""
 
 toolkit:
   go:
-    package_name: github.com/godrei/steps-go-list
+    package_name: github.com/bitrise-steplib/steps-go-list
 
 inputs:
 - exclude: "*/vendor/*"
   opts:
-    title: Exclude pattern
-    summary: Skipp matching go packages.
-    description: Skipp matching go packages.
+    title: Exclude patterns
+    summary: Skip matching go packages.
+    description: |-
+      Skip matching go packages.  
+      Multiple patterns can be specified as a newline separated list.
+
+      Examples:
+
+      - "*/vendor/*"
+      - "*/steps-go-list*\n*/gotool*"
 outputs:
 - BITRISE_GO_PACKAGES: 
   opts:
-    title: Comma separated list of go packages
+    title: List of go packages.
+    description: |-
+      Newline (`\n`) separated list of go packages.
+
+      Example: `github.com/my/step\ngithub.com/bitrise/step/tool`

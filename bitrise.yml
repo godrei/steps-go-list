@@ -36,18 +36,19 @@ workflows:
         title: Step Test
         run_if: true
         inputs:
-        - exclude: "*/vendor/*"
+        - exclude: "*/vendor/*\n*gotool"
     - script:
         title: Output Test
         inputs:
         - content: |
             #!/usr/bin/env bash
             set -e
-            if [[ $BITRISE_GO_PACKAGES != "github.com/godrei/steps-go-list,github.com/godrei/steps-go-list/envman,github.com/godrei/steps-go-list/gotool" ]] ; then
-              echo '$BITRISE_GO_PACKAGES' "($BITRISE_GO_PACKAGES) should be: github.com/godrei/steps-go-list,github.com/godrei/steps-go-list/envman,github.com/godrei/steps-go-list/gotool"
+            echo '$BITRISE_GO_PACKAGES='"($BITRISE_GO_PACKAGES)"
+            EXPECTED=github.com/bitrise-steplib/steps-go-list
+            if [[ "$BITRISE_GO_PACKAGES" != "$EXPECTED" ]] ; then
+              echo "should be: $EXPECTED"
               exit 1
             fi
-            echo '$BITRISE_GO_PACKAGES:' "$BITRISE_GO_PACKAGES"
 
   # ----------------------------------------------------------------
   # --- Utility workflows
@@ -98,7 +99,7 @@ workflows:
       - MY_STEPLIB_REPO_FORK_GIT_URL: $MY_STEPLIB_REPO_FORK_GIT_URL
       - BITRISE_STEP_VERSION: $BITRISE_STEP_VERSION
       - BITRISE_STEP_ID: go-list
-      - BITRISE_STEP_GIT_CLONE_URL: https://github.com/godrei/steps-go-list
+      - BITRISE_STEP_GIT_CLONE_URL: https://github.com/bitrise-steplib/steps-go-list
     description: |-
       If this is the first time you try to share a Step you should
       first call: $ bitrise share

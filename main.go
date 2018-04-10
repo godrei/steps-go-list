@@ -5,15 +5,10 @@ import (
 	"strings"
 
 	"github.com/bitrise-io/go-utils/log"
-	"github.com/bitrise-tools/go-steputils/stepconf"
-	"github.com/godrei/steps-go-list/envman"
-	"github.com/godrei/steps-go-list/gotool"
+	"github.com/bitrise-steplib/steps-go-list/gotool"
+	"github.com/bitrise-tools/go-steputils/tools"
+	glob "github.com/ryanuber/go-glob"
 )
-
-// Config ...
-type Config struct {
-	Exclude string `env:"exclude"`
-}
 
 func failf(format string, args ...interface{}) {
 	log.Errorf(format, args...)
@@ -21,30 +16,38 @@ func failf(format string, args ...interface{}) {
 }
 
 func main() {
-	var cfg Config
-	if err := stepconf.Parse(&cfg); err != nil {
-		failf("Error: %s\n", err)
-	}
-	stepconf.Print(cfg)
+	exclude := os.Getenv("exclude")
 
-	dir, err := os.Getwd()
-	if err != nil {
-		failf("Failed to get working directory: %s", err)
+	log.Infof("Configs:")
+	log.Printf("- exclude: %s", exclude)
+
+	if exclude == "" {
+		failf("Required input not defined: exclude")
 	}
 
-	excludes := strings.Split(cfg.Exclude, ",")
+	excludes := strings.Split(exclude, "\n")
 
-	packages, err := gotool.ListPackages(dir, excludes...)
+	packages, err := gotool.ListPackages()
 	if err != nil {
 		failf("Failed to list packages: %s", err)
 	}
 
 	log.Infof("\nList of packages:")
+	var filteredPackages []string
+
+packageLoop:
 	for _, p := range packages {
-		log.Printf("- %s", p)
+		for _, e := range excludes {
+			if glob.Glob(e, p) {
+				log.Printf("- %s", p)
+				continue packageLoop
+			}
+		}
+		log.Donef("✓ %s", p)
+		filteredPackages = append(filteredPackages, p)
 	}
 
-	if err := envman.Export("BITRISE_GO_PACKAGES", strings.Join(packages, ",")); err != nil {
+	if err := tools.ExportEnvironmentWithEnvman("BITRISE_GO_PACKAGES", strings.Join(filteredPackages, "\n")); err != nil {
 		failf("Failed to export packages, error: %s", err)
 	}
 }
